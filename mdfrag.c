@@ -18,8 +18,7 @@ unsigned char buffer[TOTAL_MEMORY];
 typedef struct chunk_header
 {
     struct chunk_header *next;
-    unsigned int size : 24; // 3 baiti
-    unsigned int free : 1; // 1 bits
+    unsigned int size : 32; // 4 baiti
 } __attribute__((packed, aligned(4))) chunk_header; // ietaupa 4 baitus, bet tādēļ var būt lēnāka ātrdarbība...
 
 static chunk_header *buffer_start = NULL;
@@ -127,7 +126,6 @@ void init_buffer(const char *chunks_file)
     // inicializē pirmo chunk (head)
     unsigned char *current =  buffer;
     chunk_header *head = (chunk_header *)current;
-    head->free = 1;
     head->size = chunks[0];
     current += sizeof(chunk_header) + head->size;
     chunk_header *prev = head;
@@ -135,7 +133,6 @@ void init_buffer(const char *chunks_file)
     // inicializē parējos chunk
     for(int i = 1; i < count; i++) {
         chunk_header *chunk = (chunk_header *)current;
-        chunk->free = 1;
         chunk->size = chunks[i];
         prev->next = chunk;
         prev = chunk;
@@ -154,8 +151,7 @@ void print_buffer()
     int i = 0;
     printf("Atmiņas stāvoklis:\n");
     while(curr) {
-        printf(" Bloks %d: addr=%p, izmērs=%d, brīvs=%d, next=%p\n",
-               i, (void *)curr, curr->size, curr->free, (void *)curr->next);
+        printf(" Bloks %d: izmērs=%d\n", i, curr->size);
         curr = curr->next;
         i++;
     }
@@ -186,10 +182,6 @@ void test(char *chunks_file, char *sizes_file)
             unassigned += insert[i];
         } else {
             assign->size = assign->size - insert[i];
-
-            if (assign->size == 0) {
-                assign->free = 0;
-            }
         }
     }
     end = clock();

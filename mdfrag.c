@@ -193,16 +193,22 @@ void test(char *chunks_file, char *sizes_file)
     printf("Nepiešķirtās atmiņas daudzums: %d\n", unassigned);
     if (unassigned != 0) {
         chunk_header *it = buffer_start;
-        int max_unassigned = 0;
+        double max_free = 0;
+        double free_total = 0;
+        double quality = 0;
         while (it != NULL) {
-            if (it->size > max_unassigned) {
-                max_unassigned = it->size;
+            if (it->size > max_free) {
+                max_free = it->size;
             }
+            quality += it->size * it->size;
+            free_total += it->size;
             it = it->next;
         }
-        printf("Fragmentācija = %f%%\n", (1-((double)max_unassigned/(double)unassigned))*100);
+
+        printf("Fragmentācija (1.versija) = %f%%\n", (1-(max_free/free_total))*100);
+        printf("Fragmentācija (2.versija) = %f%%\n", (1-pow(sqrt(quality)/free_total, 2))*100);
     } else {
-        printf("Fragmentācija = 0%%\n");
+        printf("Fragmentācija (1.versija) = 0%%\n");
     }
     print_buffer();
 }

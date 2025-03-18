@@ -24,7 +24,7 @@ typedef struct chunk_header
 static chunk_header *buffer_start = NULL;
 
 // void* nozīmē "generic pointer", var atgriezt NULL vai pointeri uz jebko
-// atgriežam pointeri uz izdalīto atmiņu, vai NULL, ja neizdevās rezervēšana
+// atgriežam pointeri uz bloku, kurā izdalīta atmiņa, vai NULL, ja neizdevās rezervēšana
 void *best_fit(chunk_header *current, int insert)
 {
     unsigned int closest_fit_number;
@@ -56,17 +56,29 @@ void *best_fit(chunk_header *current, int insert)
     return closest_fit;
 }
 
-void *worst_fit(size_t size)
+void *worst_fit(int insert)
 {
 
 }
 
-void *first_fit(size_t size)
+void *first_fit(int insert)
 {
+    chunk_header *curr = buffer_start;
+    chunk_header *fit = NULL;
 
+    while(curr != NULL) {
+        if(curr->size - insert < 0) {
+            curr = curr->next;
+        } else {
+            fit = curr;
+            break;
+        }
+    }
+
+    return fit;
 }
 
-void *next_fit(size_t size)
+void *next_fit(int insert)
 {
 
 }
@@ -174,8 +186,8 @@ void test(char *chunks_file, char *sizes_file)
     clock_t start = clock(), end;
 
     for (int i = 0; i < count; i++) {
-        assign = best_fit(current, insert[i]);
-        // assign = first_fit(current, insert[i]);
+        //assign = best_fit(current, insert[i]);
+        assign = first_fit(insert[i]);
         // assign = worst_fit(current, insert[i]);
         // assign = next_fit(current, insert[i]);
         if (assign == NULL) {
@@ -211,7 +223,7 @@ void test(char *chunks_file, char *sizes_file)
         printf("Fragmentācija = 0%%\n");
     }
 
-    printf("Kopējais laiks sekundēs: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
+    printf("Kopējais laiks sekundēs: %.7f\n", (double)(end - start) / CLOCKS_PER_SEC);
     print_buffer();
 }
 

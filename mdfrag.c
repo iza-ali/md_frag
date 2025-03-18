@@ -211,7 +211,9 @@ void test(char *chunks_file, char *sizes_file)
             it = it->next;
         }
 
+        // no https://en.wikipedia.org/wiki/Fragmentation_(computing)#Comparison
         printf("Fragmentācija (1.versija) = %f%%\n", (1-(max_free/free_total))*100);
+        // no https://asawicki.info/news_1757_a_metric_for_memory_fragmentation
         printf("Fragmentācija (2.versija) = %f%%\n", (1-pow(sqrt(quality)/free_total, 2))*100);
     } else {
         printf("Fragmentācija = 0%%\n");
@@ -247,9 +249,8 @@ int main(int argc, char **argv)
         show_usage();
         exit(1);
     }
+
     test(chunks_file, sizes_file);
-    // init_buffer(chunks_file);
-    // print_buffer();
 
     return 0;
 }

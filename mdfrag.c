@@ -18,7 +18,7 @@ unsigned char buffer[TOTAL_MEMORY];
 typedef struct chunk_header
 {
     struct chunk_header *next;
-    unsigned int size : 32; // 4 baiti
+    unsigned int size : 24; // 3 baiti
 } __attribute__((packed, aligned(4))) chunk_header; // ietaupa 4 baitus, bet tādēļ var būt lēnāka ātrdarbība...
 
 static chunk_header *buffer_start = NULL;

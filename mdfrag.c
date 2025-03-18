@@ -26,7 +26,7 @@ static chunk_header *buffer_start = NULL;
 
 // void* nozīmē "generic pointer", var atgriezt NULL vai pointeri uz jebko
 // atgriežam pointeri uz izdalīto atmiņu, vai NULL, ja neizdevās rezervēšana
-chunk_header *best_fit(chunk_header *current, int insert)
+void *best_fit(chunk_header *current, int insert)
 {
     unsigned int closest_fit_number;
     chunk_header *closest_fit = NULL;
@@ -166,7 +166,7 @@ void show_usage()
     printf("Izmantošana: md5 -c chunks -s sizes\n");
 }
 
-// testēšanas funkcija
+// testēšanas funkcija, pagaidām izveidota tā, ka atkomentē, lai pārbaudītu noteiktu algoritmu
 void test(char *chunks_file, char *sizes_file)
 {
     int count = 0;
@@ -177,6 +177,9 @@ void test(char *chunks_file, char *sizes_file)
     chunk_header *assign = NULL;
     for (int i = 0; i < count; i++) {
         assign = best_fit(current, insert[i]);
+        // assign = first_fit(current, insert[i]);
+        // assign = worst_fit(current, insert[i]);
+        // assign = next_fit(current, insert[i]);
         if (assign == NULL) {
             unassigned += insert[i];
         } else {
@@ -188,6 +191,19 @@ void test(char *chunks_file, char *sizes_file)
     }
     free(insert);
     printf("Nepiešķirtās atmiņas daudzums: %d\n", unassigned);
+    if (unassigned != 0) {
+        chunk_header *it = buffer_start;
+        int max_unassigned = 0;
+        while (it != NULL) {
+            if (it->size > max_unassigned) {
+                max_unassigned = it->size;
+            }
+            it = it->next;
+        }
+        printf("Fragmentācija = %f%%\n", (1-((double)max_unassigned/(double)unassigned))*100);
+    } else {
+        printf("Fragmentācija = 0%%\n");
+    }
     print_buffer();
 }
 

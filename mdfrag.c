@@ -41,9 +41,17 @@ void *first_fit(size_t size)
 
 }
 
-void *next_fit(size_t size)
+void *next_fit(chunk_header *current, int insert)
 {
-
+    while (current != NULL) {
+        if (current->size - insert < 0) {
+            current = current->next;
+            continue;
+        }
+        if (current->size >= insert) {
+            return current;
+        }
+    }
 }
 
 // lasa skaitļus (chunks vai sizes) no chunks faila vai sizes faila

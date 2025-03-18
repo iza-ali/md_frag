@@ -20,15 +20,41 @@ typedef struct chunk_header
     struct chunk_header *next;
     unsigned int size : 24; // 3 baiti
     unsigned int free : 1; // 1 bits
-} __attribute__((packed, aligned(4))) chunk_header; // ietaupa 4 baitus, bet tādēļ var būt lēnāka ātrsdarbība...
+} __attribute__((packed, aligned(4))) chunk_header; // ietaupa 4 baitus, bet tādēļ var būt lēnāka ātrdarbība...
 
 static chunk_header *buffer_start = NULL;
 
 // void* nozīmē "generic pointer", var atgriezt NULL vai pointeri uz jebko
 // atgriežam pointeri uz izdalīto atmiņu, vai NULL, ja neizdevās rezervēšana
-void *best_fit(size_t size)
+chunk_header *best_fit(chunk_header *current, int insert)
 {
+    unsigned int closest_fit_number;
+    chunk_header *closest_fit = NULL;
+    closest_fit_number = -1;
 
+    while (current != NULL) {
+        if (current->size - insert < 0) {
+            current = current->next;
+            continue;
+        }
+
+        if (current->size == insert) {
+            closest_fit = current;
+            break;
+        } else {
+            if (closest_fit_number == -1) {
+                closest_fit_number = current->size - insert;
+                closest_fit = current;
+            } else {
+                if (current->size - insert < closest_fit_number) {
+                    closest_fit_number = current->size - insert;
+                    closest_fit = current;
+                }
+            }
+            current = current->next;
+        }
+    }
+    return closest_fit;
 }
 
 void *worst_fit(size_t size)
@@ -140,6 +166,31 @@ void show_usage()
     printf("Izmantošana: md5 -c chunks -s sizes\n");
 }
 
+// testēšanas funkcija
+void test(char *chunks_file, char *sizes_file)
+{
+    int count = 0;
+    int unassigned = 0;
+    int *insert = read_nums_from_file(sizes_file, &count);
+    init_buffer(chunks_file);
+    chunk_header *current = buffer_start;
+    chunk_header *assign = NULL;
+    for (int i = 0; i < count; i++) {
+        assign = best_fit(current, insert[i]);
+        if (assign == NULL) {
+            unassigned += insert[i];
+        } else {
+            assign->size = assign->size - insert[i];
+            if (assign->size == 0) {
+                assign->free = 0;
+            }
+        }
+    }
+    free(insert);
+    printf("Nepiešķirtās atmiņas daudzums: %d\n", unassigned);
+    print_buffer();
+}
+
 int main(int argc, char **argv)
 {
     char *chunks_file = NULL;
@@ -166,9 +217,9 @@ int main(int argc, char **argv)
         show_usage();
         exit(1);
     }
-
-    init_buffer(chunks_file);
-    print_buffer();
+    test(chunks_file, sizes_file);
+    // init_buffer(chunks_file);
+    // print_buffer();
 
     return 0;
 }

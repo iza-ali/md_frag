@@ -175,6 +175,8 @@ void test(char *chunks_file, char *sizes_file)
     init_buffer(chunks_file);
     chunk_header *current = buffer_start;
     chunk_header *assign = NULL;
+    clock_t start = clock(), end;
+
     for (int i = 0; i < count; i++) {
         assign = best_fit(current, insert[i]);
         // assign = first_fit(current, insert[i]);
@@ -184,13 +186,17 @@ void test(char *chunks_file, char *sizes_file)
             unassigned += insert[i];
         } else {
             assign->size = assign->size - insert[i];
+
             if (assign->size == 0) {
                 assign->free = 0;
             }
         }
     }
+    end = clock();
     free(insert);
+
     printf("Nepiešķirtās atmiņas daudzums: %d\n", unassigned);
+
     if (unassigned != 0) {
         chunk_header *it = buffer_start;
         double max_free = 0;
@@ -208,8 +214,10 @@ void test(char *chunks_file, char *sizes_file)
         printf("Fragmentācija (1.versija) = %f%%\n", (1-(max_free/free_total))*100);
         printf("Fragmentācija (2.versija) = %f%%\n", (1-pow(sqrt(quality)/free_total, 2))*100);
     } else {
-        printf("Fragmentācija (1.versija) = 0%%\n");
+        printf("Fragmentācija = 0%%\n");
     }
+
+    printf("Kopējais laiks sekundēs: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
     print_buffer();
 }
 

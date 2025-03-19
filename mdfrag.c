@@ -280,32 +280,25 @@ void test(char *chunks_file, char *sizes_file)
 
     printf("Nepiešķirtās atmiņas daudzums: %d\n", unassigned);
 
-    if (unassigned != 0)
+    chunk_header *it = buffer_start;
+    double max_free = 0;
+    double free_total = 0;
+    double quality = 0;
+    while (it != NULL)
     {
-        chunk_header *it = buffer_start;
-        double max_free = 0;
-        double free_total = 0;
-        double quality = 0;
-        while (it != NULL)
+        if (it->size > max_free)
         {
-            if (it->size > max_free)
-            {
-                max_free = it->size;
-            }
-            quality += it->size * it->size;
-            free_total += it->size;
-            it = it->next;
+            max_free = it->size;
         }
+        quality += it->size * it->size;
+        free_total += it->size;
+        it = it->next;
+    }
 
-        // no https://en.wikipedia.org/wiki/Fragmentation_(computing)#Comparison
-        printf("Fragmentācija (1.versija) = %f%%\n", (1 - (max_free / free_total)) * 100);
-        // no https://asawicki.info/news_1757_a_metric_for_memory_fragmentation
-        printf("Fragmentācija (2.versija) = %f%%\n", (1 - pow(sqrt(quality) / free_total, 2)) * 100);
-    }
-    else
-    {
-        printf("Fragmentācija = 0%%\n");
-    }
+    // no https://en.wikipedia.org/wiki/Fragmentation_(computing)#Comparison
+    printf("Fragmentācija (1.versija) = %f%%\n", (1 - (max_free / free_total)) * 100);
+    // no https://asawicki.info/news_1757_a_metric_for_memory_fragmentation
+    printf("Fragmentācija (2.versija) = %f%%\n", (1 - pow(sqrt(quality) / free_total, 2)) * 100);
 
     printf("Kopējais laiks sekundēs: %.7f\n", (double)(end - start) / CLOCKS_PER_SEC);
     print_buffer();
@@ -349,31 +342,23 @@ void fancy_test(char *chunks_file, char *sizes_file)
         result_time[i] = (double)(end - start) / CLOCKS_PER_SEC;
         unasigned_by_algorithms[i] = unassigned;
 
-        if (unasigned_by_algorithms[i] != 0)
+        chunk_header *it = buffer_start;
+        double max_free = 0;
+        double free_total = 0;
+        double quality = 0;
+        while (it != NULL)
         {
-            chunk_header *it = buffer_start;
-            double max_free = 0;
-            double free_total = 0;
-            double quality = 0;
-            while (it != NULL)
+            if (it->size > max_free)
             {
-                if (it->size > max_free)
-                {
-                    max_free = it->size;
-                }
-                quality += it->size * it->size;
-                free_total += it->size;
-                it = it->next;
+                max_free = it->size;
             }
+            quality += it->size * it->size;
+            free_total += it->size;
+            it = it->next;
+        }
 
-            frag_v1[i] = (1 - (max_free / free_total)) * 100;
-            frag_v2[i] = (1 - pow(sqrt(quality) / free_total, 2)) * 100;
-        }
-        else
-        {
-            frag_v1[i] = 0;
-            frag_v2[i] = 0;
-        }
+        frag_v1[i] = (1 - (max_free / free_total)) * 100;
+        frag_v2[i] = (1 - pow(sqrt(quality) / free_total, 2)) * 100;
 
         printf("\n============Buffera stavoklis pēc %s============\n", algorithm_names[i]);
         print_buffer();
@@ -382,7 +367,7 @@ void fancy_test(char *chunks_file, char *sizes_file)
 
     free(insert);
 
-    printf("\n============Testu rezuttu tabula============\n");
+    printf("\n============Testu rezultātu tabula============\n");
     printf("| %-20s | %-28s | %-28s | %-15s | %-32s \n",
            "Algoritms",
            "Fragmentācija (1.versija)",

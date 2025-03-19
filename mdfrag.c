@@ -73,13 +73,16 @@ void *worst_fit(int insert)
     chunk_header *worst_fit = NULL;
     chunk_header *current = buffer_start;
 
-    while (current != NULL) {
-        if (current->size - insert < 0) {
+    while (current != NULL)
+    {
+        if (current->size - insert < 0)
+        {
             current = current->next;
             continue;
         }
 
-        if (current->size - insert >= worst_fit_number) {
+        if (current->size - insert >= worst_fit_number)
+        {
             worst_fit_number = current->size - insert;
             worst_fit = current;
         }
@@ -218,7 +221,7 @@ void reset_buffer(const char *chunks_file)
 
     chunk_header *curr = buffer_start;
 
-    for (int i = 1; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
         curr->size = chunks[i];
         curr = curr->next;
@@ -344,12 +347,7 @@ void fancy_test(char *chunks_file, char *sizes_file)
         end = clock();
         result_time[i] = (double)(end - start) / CLOCKS_PER_SEC;
         unasigned_by_algorithms[i] = unassigned;
-    }
 
-    free(insert);
-
-    for (int i = 0; i < algorithm_count; i++)
-    {
         if (unasigned_by_algorithms[i] != 0)
         {
             chunk_header *it = buffer_start;
@@ -375,7 +373,13 @@ void fancy_test(char *chunks_file, char *sizes_file)
             frag_v1[i] = 0;
             frag_v2[i] = 0;
         }
+
+        printf("\n============Buffera stavoklis pēc %s============\n", algorithm_names[i]);
+        print_buffer();
+        reset_buffer(chunks_file);
     }
+
+    free(insert);
 
     printf("============Testu rezuttu tabula============\n");
     printf("Algoritms\tFragmentācija (1.versija)\tFragmentācija (2.versija)\tLaiks\tNepiešķirtās atmiņas daudzums\n");
@@ -383,10 +387,8 @@ void fancy_test(char *chunks_file, char *sizes_file)
     {
         printf("%s\t%d%%\t%d%%\t%.7f\t%d\n", algorithm_names[i], frag_v1[i], frag_v2[i], result_time[i], unasigned_by_algorithms[i]);
     }
-    printf("\n============Buffer state after tests============\n");
-    print_buffer();
 
-    printf("\n============Fragmentacijas salidzinajums (skaists)============\n");
+    printf("\n============Fragmentacijas salidzinajums (skaists - 1.versija)============\n");
     for (int i = 0; i < algorithm_count; i++)
     {
         printf("%s\t", algorithm_names[i]);
@@ -394,6 +396,16 @@ void fancy_test(char *chunks_file, char *sizes_file)
             printf("|");
 
         printf(" %d%%\n", frag_v1[i]);
+    }
+
+    printf("\n============Fragmentacijas salidzinajums (skaists - 2.versija)============\n");
+    for (int i = 0; i < algorithm_count; i++)
+    {
+        printf("%s\t", algorithm_names[i]);
+        for (int j = 0; j < frag_v2[i]; j++)
+            printf("|");
+
+        printf(" %d%%\n", frag_v2[i]);
     }
     printf("======================================================\n");
 }
@@ -432,7 +444,11 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    printf("Normals tests:\n");
     test(chunks_file, sizes_file);
+
+    printf("\nFancy tests:\n");
+    fancy_test(chunks_file, sizes_file);
 
     return 0;
 }

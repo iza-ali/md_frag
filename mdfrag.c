@@ -26,32 +26,32 @@ static chunk_header *current_chunk = NULL;
 
 // void* nozīmē "generic pointer", var atgriezt NULL vai pointeri uz jebko
 // atgriežam pointeri uz bloku, kurā izdalīta atmiņa, vai NULL, ja neizdevās rezervēšana
-void *best_fit(chunk_header *current, int insert)
+void *best_fit(int insert)
 {
     unsigned int closest_fit_number;
     chunk_header *closest_fit = NULL;
     closest_fit_number = -1;
 
-    while (current != NULL) {
-        if (current->size - insert < 0) {
-            current = current->next;
+    while (current_chunk != NULL) {
+        if (current_chunk->size - insert < 0) {
+            current_chunk = current_chunk->next;
             continue;
         }
 
-        if (current->size == insert) {
-            closest_fit = current;
+        if (current_chunk->size == insert) {
+            closest_fit = current_chunk;
             break;
         } else {
             if (closest_fit_number == -1) {
-                closest_fit_number = current->size - insert;
-                closest_fit = current;
+                closest_fit_number = current_chunk->size - insert;
+                closest_fit = current_chunk;
             } else {
-                if (current->size - insert < closest_fit_number) {
-                    closest_fit_number = current->size - insert;
-                    closest_fit = current;
+                if (current_chunk->size - insert < closest_fit_number) {
+                    closest_fit_number = current_chunk->size - insert;
+                    closest_fit = current_chunk;
                 }
             }
-            current = current->next;
+            current_chunk = current_chunk->next;
         }
     }
     return closest_fit;

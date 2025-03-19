@@ -31,36 +31,37 @@ void *best_fit(int insert)
     unsigned int closest_fit_number;
     chunk_header *closest_fit = NULL;
     closest_fit_number = -1;
+    chunk_header *curr = buffer_start;
 
-    while (current_chunk != NULL)
+    while (curr != NULL)
     {
-        if (current_chunk->size - insert < 0)
+        if (curr->size - insert < 0)
         {
-            current_chunk = current_chunk->next;
+            curr = curr->next;
             continue;
         }
 
-        if (current_chunk->size == insert)
+        if (curr->size == insert)
         {
-            closest_fit = current_chunk;
+            closest_fit = curr;
             break;
         }
         else
         {
             if (closest_fit_number == -1)
             {
-                closest_fit_number = current_chunk->size - insert;
-                closest_fit = current_chunk;
+                closest_fit_number = curr->size - insert;
+                closest_fit = curr;
             }
             else
             {
-                if (current_chunk->size - insert < closest_fit_number)
+                if (curr->size - insert < closest_fit_number)
                 {
-                    closest_fit_number = current_chunk->size - insert;
-                    closest_fit = current_chunk;
+                    closest_fit_number = curr->size - insert;
+                    closest_fit = curr;
                 }
             }
-            current_chunk = current_chunk->next;
+            curr = curr->next;
         }
     }
     return closest_fit;

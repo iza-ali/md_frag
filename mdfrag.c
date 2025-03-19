@@ -22,6 +22,7 @@ typedef struct chunk_header
 } __attribute__((packed, aligned(4))) chunk_header; // ietaupa 4 baitus, bet tādēļ var būt lēnāka ātrdarbība...
 
 static chunk_header *buffer_start = NULL;
+static chunk_header *current_chunk = NULL;
 
 // void* nozīmē "generic pointer", var atgriezt NULL vai pointeri uz jebko
 // atgriežam pointeri uz bloku, kurā izdalīta atmiņa, vai NULL, ja neizdevās rezervēšana
@@ -78,9 +79,20 @@ void *first_fit(int insert)
     return fit;
 }
 
-void *next_fit(int insert)
+void *next_fit(unsigned int insert)
 {
+    chunk_header *start = current_chunk;
+    do {
+        if(current_chunk->free && current_chunk->size >= insert) {
+            return current_chunk;
+        }
+        current_chunk = current_chunk->next;
+        if(current_chunk == NULL) {
+            current_chunk = buffer_start;
+        }
+    } while(current_chunk != start);
 
+    return NULL;
 }
 
 // lasa skaitļus (chunks vai sizes) no chunks faila vai sizes faila
@@ -155,6 +167,7 @@ void init_buffer(const char *chunks_file)
     free(chunks);
 
     buffer_start = head;
+    current_chunk = head;
 }
 
 void print_buffer()

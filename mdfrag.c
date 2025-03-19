@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-
 // izdalītās atmiņas (maksimālais) kopējais apjoms ir 1024 baiti
 // piemēram, mem-frag-tests-1/chunks2.txt kopējais chunk'u izmērs ir 1023
 // bet tad nepietiek atmiņas dienesta informācijai
@@ -295,10 +294,18 @@ void test(char *chunks_file, char *sizes_file)
         it = it->next;
     }
 
+    double frag_v1 = 0;
+    double frag_v2 = 0;
+
+    if(free_total != 0) {
+        frag_v1 = (1 - (max_free / free_total)) * 100;
+        frag_v2 = (1 - pow(sqrt(quality) / free_total, 2)) * 100;
+    }
+
     // no https://en.wikipedia.org/wiki/Fragmentation_(computing)#Comparison
-    printf("Fragmentācija (1.versija) = %f%%\n", (1 - (max_free / free_total)) * 100);
+    printf("Fragmentācija (1.versija) = %f%%\n", frag_v1);
     // no https://asawicki.info/news_1757_a_metric_for_memory_fragmentation
-    printf("Fragmentācija (2.versija) = %f%%\n", (1 - pow(sqrt(quality) / free_total, 2)) * 100);
+    printf("Fragmentācija (2.versija) = %f%%\n", frag_v2);
 
     printf("Kopējais laiks sekundēs: %.7f\n", (double)(end - start) / CLOCKS_PER_SEC);
     print_buffer();
@@ -320,7 +327,7 @@ void fancy_test(char *chunks_file, char *sizes_file)
     double result_time[algorithm_count];
     int unasigned_by_algorithms[algorithm_count];
 
-    printf("Testing fragmentation for %s (chunk file) and %s (sizes file)...\n", chunks_file, sizes_file);
+    printf("Testē fragmentāciju ar %s (chunks file) un %s (sizes file)...\n", chunks_file, sizes_file);
 
     for (int i = 0; i < algorithm_count; i++)
     {
@@ -357,10 +364,15 @@ void fancy_test(char *chunks_file, char *sizes_file)
             it = it->next;
         }
 
-        frag_v1[i] = (1 - (max_free / free_total)) * 100;
-        frag_v2[i] = (1 - pow(sqrt(quality) / free_total, 2)) * 100;
+        if(free_total == 0) {
+            frag_v1[i] = 0;
+            frag_v2[i] = 0;
+        } else {
+            frag_v1[i] = (1 - (max_free / free_total)) * 100;
+            frag_v2[i] = (1 - pow(sqrt(quality) / free_total, 2)) * 100;
+        }
 
-        printf("\n============Buffera stavoklis pēc %s============\n", algorithm_names[i]);
+        printf("\n============Buffera stāvoklis pēc %s============\n", algorithm_names[i]);
         print_buffer();
         reset_buffer(chunks_file);
     }
@@ -385,7 +397,7 @@ void fancy_test(char *chunks_file, char *sizes_file)
                unasigned_by_algorithms[i]);
     }
 
-    printf("\n============Fragmentacijas salidzinajums (skaists - 1.versija)============\n");
+    printf("\n============Fragmentācijas salīdzinājums (skaists - 1.versija)============\n");
     for (int i = 0; i < algorithm_count; i++)
     {
         printf("%s\t", algorithm_names[i]);
@@ -395,7 +407,7 @@ void fancy_test(char *chunks_file, char *sizes_file)
         printf(" %d%%\n", frag_v1[i]);
     }
 
-    printf("\n============Fragmentacijas salidzinajums (skaists - 2.versija)============\n");
+    printf("\n============Fragmentācijas salīdzinājums (skaists - 2.versija)============\n");
     for (int i = 0; i < algorithm_count; i++)
     {
         printf("%s\t", algorithm_names[i]);

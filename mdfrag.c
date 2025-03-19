@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+
 // izdalītās atmiņas (maksimālais) kopējais apjoms ir 1024 baiti
 // piemēram, mem-frag-tests-1/chunks2.txt kopējais chunk'u izmērs ir 1023
 // bet tad nepietiek atmiņas dienesta informācijai
@@ -381,11 +382,22 @@ void fancy_test(char *chunks_file, char *sizes_file)
 
     free(insert);
 
-    printf("============Testu rezuttu tabula============\n");
-    printf("Algoritms\tFragmentācija (1.versija)\tFragmentācija (2.versija)\tLaiks\tNepiešķirtās atmiņas daudzums\n");
+    printf("\n============Testu rezuttu tabula============\n");
+    printf("| %-20s | %-28s | %-28s | %-15s | %-32s \n",
+           "Algoritms",
+           "Fragmentācija (1.versija)",
+           "Fragmentācija (2.versija)",
+           "Laiks",
+           "Nepiešķirtās atmiņas daudzums");
+
     for (int i = 0; i < algorithm_count; i++)
     {
-        printf("%s\t%d%%\t%d%%\t%.7f\t%d\n", algorithm_names[i], frag_v1[i], frag_v2[i], result_time[i], unasigned_by_algorithms[i]);
+        printf("| %-20s | %26d%% | %26d%% | %15.7f | %30d \n",
+               algorithm_names[i],
+               frag_v1[i],
+               frag_v2[i],
+               result_time[i],
+               unasigned_by_algorithms[i]);
     }
 
     printf("\n============Fragmentacijas salidzinajums (skaists - 1.versija)============\n");

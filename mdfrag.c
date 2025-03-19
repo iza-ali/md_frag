@@ -83,7 +83,7 @@ void *next_fit(unsigned int insert)
 {
     chunk_header *start = current_chunk;
     do {
-        if(current_chunk->free && current_chunk->size >= insert) {
+        if(current_chunk->size >= insert) {
             return current_chunk;
         }
         current_chunk = current_chunk->next;

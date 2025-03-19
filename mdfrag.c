@@ -170,6 +170,21 @@ void init_buffer(const char *chunks_file)
     current_chunk = head;
 }
 
+void reset_buffer(const char *chunks_file)
+{
+    int count = 0;
+    int *chunks = read_nums_from_file(chunks_file, &count);
+
+    chunk_header *curr = buffer_start;
+
+    for (int i = 1; i < count; i++) {
+        curr->size = chunks[i];
+        curr = curr->next;
+    }
+    
+    free(chunks);
+}
+
 void print_buffer()
 {
     chunk_header *curr = buffer_start;
@@ -189,6 +204,59 @@ void show_usage()
 
 // testēšanas funkcija, pagaidām izveidota tā, ka atkomentē, lai pārbaudītu noteiktu algoritmu
 void test(char *chunks_file, char *sizes_file)
+{
+    int count = 0;
+    int unassigned = 0;
+    int *insert = read_nums_from_file(sizes_file, &count);
+    init_buffer(chunks_file);
+    chunk_header *current = buffer_start;
+    chunk_header *assign = NULL;
+    clock_t start = clock(), end;
+
+    for (int i = 0; i < count; i++) {
+        //assign = best_fit(current, insert[i]);
+        assign = first_fit(insert[i]);
+        // assign = worst_fit(current, insert[i]);
+        // assign = next_fit(current, insert[i]);
+        if (assign == NULL) {
+            unassigned += insert[i];
+        } else {
+            assign->size = assign->size - insert[i];
+        }
+    }
+    end = clock();
+    free(insert);
+
+    printf("Nepiešķirtās atmiņas daudzums: %d\n", unassigned);
+
+    if (unassigned != 0) {
+        chunk_header *it = buffer_start;
+        double max_free = 0;
+        double free_total = 0;
+        double quality = 0;
+        while (it != NULL) {
+            if (it->size > max_free) {
+                max_free = it->size;
+            }
+            quality += it->size * it->size;
+            free_total += it->size;
+            it = it->next;
+        }
+
+        // no https://en.wikipedia.org/wiki/Fragmentation_(computing)#Comparison
+        printf("Fragmentācija (1.versija) = %f%%\n", (1-(max_free/free_total))*100);
+        // no https://asawicki.info/news_1757_a_metric_for_memory_fragmentation
+        printf("Fragmentācija (2.versija) = %f%%\n", (1-pow(sqrt(quality)/free_total, 2))*100);
+    } else {
+        printf("Fragmentācija = 0%%\n");
+    }
+
+    printf("Kopējais laiks sekundēs: %.7f\n", (double)(end - start) / CLOCKS_PER_SEC);
+    print_buffer();
+}
+
+
+void fancy_test(char *chunks_file, char *sizes_file)
 {
     int count = 0;
     int unassigned = 0;

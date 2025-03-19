@@ -57,9 +57,25 @@ void *best_fit(chunk_header *current, int insert)
     return closest_fit;
 }
 
-void *worst_fit(int insert)
+void *worst_fit(chunk_header *current, int insert)
 {
+    unsigned int worst_fit_number = 0;
+    chunk_header *worst_fit = NULL;
 
+    while (current != NULL) {
+        if (current->size - insert < 0) {
+            current = current->next;
+            continue;
+        }
+
+        if (current->size - insert >= worst_fit_number) {
+            worst_fit_number = current->size - insert;
+            worst_fit = current;
+        }
+
+        current = current->next;
+    }
+    return worst_fit;
 }
 
 void *first_fit(int insert)
